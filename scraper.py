@@ -3,7 +3,7 @@ import math
 from bs4 import BeautifulSoup
 import csv
 import string
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 url_full='https://www.kijiji.ca/b-room-rental-roommate/gta-greater-toronto-area/c36l1700272r5.0?ad=offering&price=__1200&address=M6K+1Y6&ll=43.636322,-79.424146&furnished=1'
 url_first='https://www.kijiji.ca/b-room-rental-roommate/gta-greater-toronto-area/page-'
@@ -59,6 +59,16 @@ def visited(adId):
         return True
     return False
 
+# should prob do it in a way so that we always have five
+# don't write out immediately
+def updateTopFive():
+    with open(topFiveFile, 'w') as tf:
+        tf_writer=csv.writer(tf)
+        for ad in newTopFive:
+            tf_writer.writerow([ad])
+    tf.close()
+
+
 ############################################################
 try:
     url=url_first+str(1)+url_second
@@ -79,6 +89,9 @@ except:
     print("No jobs found")
 
 adNo=0  #this is for storing topFive
+DecorString="************"
+f_writer.writerow([DecorString, datetime.now(), DecorString])
+
 
 for pgno in range(0,last_page,1):
 
@@ -93,6 +106,7 @@ for pgno in range(0,last_page,1):
 
         adId=ad.get('data-ad-id')
         if (visited(adId)):
+            updateTopFive()
             exit();     # end the execution of this whole thing
 
         # now this ad is not visitied before, we want to store its info
@@ -135,12 +149,8 @@ for pgno in range(0,last_page,1):
                 adNo+=1
 f.close()
 
-# we need to write the newTopFive to previousTopFive.csv
-with open(topFiveFile, 'w') as tf:
-    tf_writer=csv.writer(tf)
-    for ad in newTopFive:
-        tf_writer.writerow([ad])
-tf.close()
+## this will only be reached the first time: when we don't exit in middle of fcn
+updateTopFive()
 
 
 
